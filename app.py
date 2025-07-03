@@ -58,10 +58,11 @@ def fetch_streaming_explanation(payload):
         placeholder = st.empty()
 
         is_code_block = False
-        output_code = ""
-        output_md = ""
+        buffer = ""
+        code_buffer = ""
 
         for line in response.iter_lines(decode_unicode=True):
+            logger.debug(f"📥 Raw stream line: {line}")
             if not line or line.strip() == "" or line.strip() == "data: [DONE]":
                 continue
 
@@ -74,19 +75,20 @@ def fetch_streaming_explanation(payload):
             try:
                 parsed = json.loads(line)
                 token = parsed["choices"][0]["delta"].get("content", "")
+                logger.debug(f"🧩 Token received: {token}")
 
                 if "```" in token:
                     is_code_block = not is_code_block
-                    if not is_code_block and output_code:
-                        placeholder.code(output_code, language="python")
-                        output_code = ""
+                    if not is_code_block and code_buffer:
+                        placeholder.code(code_buffer.strip(), language="python")
+                        code_buffer = ""
                     continue
 
                 if is_code_block:
-                    output_code += token
+                    code_buffer += token
                 else:
-                    output_md += token
-                    placeholder.markdown(output_md, unsafe_allow_html=True)
+                    buffer += token
+                    placeholder.markdown(buffer, unsafe_allow_html=True)
 
             except Exception as ee:
                 logger.warning(f"⚠️ Could not parse stream line: {line} — {ee}")
