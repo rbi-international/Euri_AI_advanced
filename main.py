@@ -40,7 +40,7 @@ def explain_stream(req: CodeRequest):
     try:
         logger.info(f"🌊 Streaming explanation for: {req.topic}")
         stream = explain_code_stream(req.language, req.topic, req.level)
-        return StreamingResponse(stream, media_type="text/plain")  # ✅ Corrected
+        return StreamingResponse(stream, media_type="text/plain; charset=utf-8")
     except Exception as e:
         logger.exception("❌ Error in /explain_stream")
         return JSONResponse(status_code=500, content={"error": str(e)})

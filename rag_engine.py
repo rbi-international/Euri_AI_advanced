@@ -1,12 +1,27 @@
-# rag_engine.py
-from sentence_transformers import SentenceTransformer, util
-from sklearn.feature_extraction.text import TfidfVectorizer
-import numpy as np
-import nltk
 import re
-nltk.download('punkt')
+import nltk
+from logger import get_logger
 
-model = SentenceTransformer("all-MiniLM-L6-v2")
+logger = get_logger("rag_engine", "logs/backend.log")
+
+# Try to import optional dependencies with error handling
+try:
+    from sentence_transformers import SentenceTransformer, util
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    import numpy as np
+    
+    # Download required NLTK data
+    try:
+        nltk.data.find('tokenizers/punkt')
+    except LookupError:
+        nltk.download('punkt')
+    
+    model = SentenceTransformer("all-MiniLM-L6-v2")
+    logger.info("✅ RAG engine initialized successfully")
+    
+except ImportError as e:
+    logger.error(f"❌ RAG dependencies missing: {e}")
+    model = None
 
 # Optional: fallback if embedding fails
 def clean_text(text):
@@ -42,9 +57,4 @@ def get_rag_context(document_text: str, question: str, top_k: int = 3) -> str:
         return f"\u274c RAG Context Error: {e}"
 
 
-# ================= Future Enhancements ===================
-# ✅ Support visual context highlighting (e.g., using token indices from similarity)
-# ✅ Use BioBERT or Domain-specific model if context is medical or technical
-# ✅ Add cosine similarity visualization (heatmaps) to explain RAG result better
-# ✅ Save top_chunks and similarity scores to file for dashboard view
-# ✅ Optional: Cache chunk embeddings using hash of document
+

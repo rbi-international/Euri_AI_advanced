@@ -44,7 +44,7 @@ def log_token_usage(model: str, tokens: int = 300):
         logger.info(f"Logged token usage: {model}, Tokens: {tokens}, Cost: ${cost}")
     except Exception as e:
         logger.exception(f"❌ Failed to log token usage: {e}")
-        print(f"✅ Logged token usage for model: {model_name}")
+        print(f"✅ Logged token usage for model: {model}")
 
 # Optional: Summarize costs for dashboard use
 def summarize_token_usage():
