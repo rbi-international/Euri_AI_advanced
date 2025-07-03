@@ -1,4 +1,3 @@
-# app.py - Complete Version with Persistent Document Chat
 import streamlit as st
 import requests
 import base64
@@ -394,114 +393,204 @@ else:
     st.markdown("### 🏠 Welcome to Euriai AI Assistant")
     st.markdown("Choose how you'd like to interact with AI:")
     
-    # Main action cards
-    col1, col2 = st.columns(2)
+    # Main feature tabs - ALL features available
+    tab1, tab2, tab3, tab4 = st.tabs(["📁 Document Chat", "🎯 Code Assistant", "🧠 AI Chat", "📊 Analytics"])
     
-    with col1:
-        with st.container():
-            st.markdown("#### 📁 Document Analysis & Chat")
-            st.markdown("Upload any document and have an ongoing conversation with AI about it.")
-            
-            if st.button("🚀 Start Document Chat", type="primary"):
-                st.session_state.current_page = "document_upload"
-                st.rerun()
-    
-    with col2:
-        with st.container():
-            st.markdown("#### 🧠 Quick AI Assistant")
-            st.markdown("Ask quick questions or generate code without uploading documents.")
-            
-            if st.button("💬 Quick Chat", type="primary"):
-                st.session_state.current_page = "quick_chat"
-                st.rerun()
-
-# ---------- Document Upload Section ----------
-if st.session_state.get("current_page") == "document_upload" and not st.session_state.chat_session_active:
-    st.header("📁 Upload Document for AI Chat")
-    
-    # Back button
-    if st.button("⬅️ Back to Home", type="secondary"):
-        st.session_state.current_page = "home"
-        st.rerun()
-    
-    uploaded_file = st.file_uploader(
-        "Upload a document to start chatting",
-        type=["py", "js", "txt", "md", "pdf", "docx"],
-        help="Upload any document and I'll help you understand, analyze, and create content based on it"
-    )
-    
-    if uploaded_file:
-        st.success(f"✅ File uploaded: {uploaded_file.name}")
-        
-        # Preview section
-        with st.expander("👁️ Preview Content"):
-            try:
-                if uploaded_file.type == "application/pdf":
-                    content = extract_text_from_pdf(uploaded_file)
-                    if not content.startswith("❌"):
-                        st.text_area("Content Preview", content[:1000] + "..." if len(content) > 1000 else content, height=200)
-                    else:
-                        st.error(content)
-                else:
-                    try:
-                        content = uploaded_file.read().decode("utf-8")
-                        st.text_area("Content Preview", content[:1000] + "..." if len(content) > 1000 else content, height=200)
-                        uploaded_file.seek(0)
-                    except UnicodeDecodeError:
-                        st.error("❌ Cannot preview this file type")
-            except Exception as e:
-                st.error(f"❌ Preview error: {str(e)}")
-        
-        # Process button
-        if st.button("🚀 Start AI Chat with Document", type="primary"):
-            with st.spinner("🔍 Processing document for AI chat..."):
-                try:
-                    # Get file content
-                    if uploaded_file.type == "application/pdf":
-                        file_content = extract_text_from_pdf(uploaded_file)
-                        if file_content.startswith("❌"):
-                            st.error(file_content)
-                            st.stop()
-                    else:
-                        file_content = uploaded_file.read().decode("utf-8")
-                    
-                    # Process for RAG
-                    if process_document_for_rag(file_content, uploaded_file.name):
-                        st.success("✅ Document processed! Chat interface is now active.")
-                        st.rerun()
-                    
-                except Exception as e:
-                    st.error(f"❌ Processing failed: {str(e)}")
-
-# ---------- Quick Chat Section ---------- 
-elif st.session_state.get("current_page") == "quick_chat":
-    st.header("🧠 Quick AI Assistant")
-    
-    # Back button
-    if st.button("⬅️ Back to Home", type="secondary"):
-        st.session_state.current_page = "home"
-        st.rerun()
-    
-    # Quick feature tabs
-    tab1, tab2, tab3 = st.tabs(["💬 Chat", "💡 Code Generator", "📖 Explainer"])
-    
+    # Tab 1: Document Analysis & Chat
     with tab1:
-        st.subheader("💬 Quick Chat")
+        st.subheader("📁 Document Analysis & Chat")
+        st.markdown("Upload any document and have an ongoing conversation with AI about it.")
+        
+        uploaded_file = st.file_uploader(
+            "Upload a document to start chatting",
+            type=["py", "js", "txt", "md", "pdf", "docx"],
+            help="Upload any document and I'll help you understand, analyze, and create content based on it"
+        )
+        
+        if uploaded_file:
+            st.success(f"✅ File uploaded: {uploaded_file.name}")
+            
+            # Preview section
+            with st.expander("👁️ Preview Content"):
+                try:
+                    if uploaded_file.type == "application/pdf":
+                        content = extract_text_from_pdf(uploaded_file)
+                        if not content.startswith("❌"):
+                            st.text_area("Content Preview", content[:1000] + "..." if len(content) > 1000 else content, height=200)
+                        else:
+                            st.error(content)
+                    else:
+                        try:
+                            content = uploaded_file.read().decode("utf-8")
+                            st.text_area("Content Preview", content[:1000] + "..." if len(content) > 1000 else content, height=200)
+                            uploaded_file.seek(0)
+                        except UnicodeDecodeError:
+                            st.error("❌ Cannot preview this file type")
+                except Exception as e:
+                    st.error(f"❌ Preview error: {str(e)}")
+            
+            # Process button
+            if st.button("🚀 Start AI Chat with Document", type="primary"):
+                with st.spinner("🔍 Processing document for AI chat..."):
+                    try:
+                        # Get file content
+                        if uploaded_file.type == "application/pdf":
+                            file_content = extract_text_from_pdf(uploaded_file)
+                            if file_content.startswith("❌"):
+                                st.error(file_content)
+                                st.stop()
+                        else:
+                            file_content = uploaded_file.read().decode("utf-8")
+                        
+                        # Process for RAG
+                        if process_document_for_rag(file_content, uploaded_file.name):
+                            st.success("✅ Document processed! Chat interface is now active.")
+                            st.rerun()
+                        
+                    except Exception as e:
+                        st.error(f"❌ Processing failed: {str(e)}")
+    
+    # Tab 2: Code Assistant
+    with tab2:
+        st.subheader("🎯 Code Assistant")
+        
+        # Create sub-tabs for different code operations
+        code_tab1, code_tab2, code_tab3 = st.tabs(["📖 Explain", "🛠 Debug", "💡 Generate"])
+        
+        with code_tab1:
+            st.markdown("#### 📖 Code Explanation")
+            
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                language = st.selectbox("Programming Language", 
+                                      ["Python", "JavaScript", "Java", "C++", "Go", "Rust", "TypeScript"])
+            with col2:
+                level = st.selectbox("Complexity Level", 
+                                   ["Beginner", "Intermediate", "Advanced", "Expert"])
+            with col3:
+                format_type = st.selectbox("Response Format", 
+                                         ["Detailed", "Concise", "Tutorial", "Reference"])
+            
+            topic = st.text_input("🔍 Enter topic or concept to explain:", 
+                                placeholder="e.g., decorators, async/await, recursion")
+            
+            if st.button("🚀 Explain Code Concept", type="primary"):
+                if topic:
+                    with st.spinner("🧠 AI is analyzing..."):
+                        payload = {
+                            "language": language,
+                            "topic": f"{topic} - {format_type} explanation for {level} level",
+                            "level": level
+                        }
+                        
+                        response = make_api_request("explain", payload)
+                        if response:
+                            result = response.json()
+                            st.markdown("### 📝 Explanation")
+                            st.markdown(result.get("response", "No response received"))
+                else:
+                    st.warning("⚠️ Please enter a topic to explain")
+        
+        with code_tab2:
+            st.markdown("#### 🛠 Code Debugging")
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                debug_language = st.selectbox("Language", 
+                                            ["Python", "JavaScript", "Java", "C++", "Go"], 
+                                            key="debug_lang")
+            with col2:
+                debug_type = st.selectbox("Issue Type", 
+                                        ["Logic Error", "Syntax Error", "Runtime Error", "Performance Issue"])
+            
+            code_input = st.text_area("🐛 Paste your code or describe the issue:", 
+                                    height=200,
+                                    placeholder="Paste your code here or describe the problem...")
+            
+            if st.button("🔍 Debug Code", type="primary"):
+                if code_input:
+                    with st.spinner("🔧 Analyzing code for issues..."):
+                        payload = {
+                            "language": debug_language,
+                            "topic": f"Debug this {debug_type.lower()}: {code_input}",
+                            "level": "Intermediate"
+                        }
+                        
+                        response = make_api_request("debug", payload)
+                        if response:
+                            result = response.json()
+                            st.markdown("### 🔧 Debug Analysis")
+                            st.markdown(result.get("response", "No response received"))
+                else:
+                    st.warning("⚠️ Please provide code or describe the issue")
+        
+        with code_tab3:
+            st.markdown("#### 💡 Code Generation")
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                gen_language = st.selectbox("Target Language", 
+                                          ["Python", "JavaScript", "Java", "C++", "Go"], 
+                                          key="gen_lang")
+            with col2:
+                gen_complexity = st.selectbox("Code Complexity", 
+                                            ["Simple", "Intermediate", "Advanced", "Production-Ready"])
+            
+            description = st.text_area("📝 Describe what you want to build:", 
+                                     height=150,
+                                     placeholder="e.g., A web scraper for product prices, A REST API for user management...")
+            
+            # Additional options
+            col1, col2 = st.columns(2)
+            with col1:
+                include_comments = st.checkbox("Include detailed comments", value=True)
+            with col2:
+                include_tests = st.checkbox("Include unit tests", value=False)
+            
+            if st.button("⚡ Generate Code", type="primary"):
+                if description:
+                    with st.spinner("🤖 Generating code..."):
+                        requirements = f"{description}"
+                        if include_comments:
+                            requirements += " with detailed comments"
+                        if include_tests:
+                            requirements += " and unit tests"
+                        
+                        payload = {
+                            "language": gen_language,
+                            "topic": requirements,
+                            "level": gen_complexity
+                        }
+                        
+                        response = make_api_request("generate", payload)
+                        if response:
+                            result = response.json()
+                            st.markdown("### ⚡ Generated Code")
+                            st.code(result.get("response", "No code generated"), language=gen_language.lower())
+                else:
+                    st.warning("⚠️ Please describe what you want to build")
+    
+    # Tab 3: AI Chat
+    with tab3:
+        st.subheader("🧠 AI Chat")
         st.markdown("*Ask any programming or technical question*")
         
         if "quick_messages" not in st.session_state:
             st.session_state.quick_messages = []
         
+        # Display chat history
         for message in st.session_state.quick_messages:
             with st.chat_message(message["role"]):
                 st.markdown(message["content"])
         
-        if prompt := st.chat_input("Ask me anything..."):
+        # Chat input
+        if prompt := st.chat_input("Ask me anything about programming, AI, or technology..."):
+            # Add user message
             st.session_state.quick_messages.append({"role": "user", "content": prompt})
-            
             with st.chat_message("user"):
                 st.markdown(prompt)
             
+            # Get AI response
             with st.chat_message("assistant"):
                 with st.spinner("🤖 Thinking..."):
                     response = make_api_request("ask", {"question": prompt})
@@ -510,52 +599,65 @@ elif st.session_state.get("current_page") == "quick_chat":
                         ai_response = result.get("response", "Sorry, I couldn't process your question.")
                         st.markdown(ai_response)
                         st.session_state.quick_messages.append({"role": "assistant", "content": ai_response})
+                    else:
+                        error_msg = "❌ Sorry, I'm having trouble connecting right now. Please try again."
+                        st.error(error_msg)
+                        st.session_state.quick_messages.append({"role": "assistant", "content": error_msg})
     
-    with tab2:
-        st.subheader("💡 Code Generator")
+    # Tab 4: Analytics
+    with tab4:
+        st.subheader("📊 Usage Analytics")
         
         col1, col2 = st.columns(2)
+        
         with col1:
-            language = st.selectbox("Language", ["Python", "JavaScript", "Java", "C++", "Go"])
+            st.markdown("#### 📈 Current Session")
+            metrics_col1, metrics_col2 = st.columns(2)
+            with metrics_col1:
+                st.metric("Total API Calls", st.session_state.calls)
+                st.metric("Selected Model", st.session_state.selected_model)
+            with metrics_col2:
+                st.metric("Total Cost", f"${st.session_state.total_cost:.4f}")
+                st.metric("Avg Cost/Call", f"${st.session_state.total_cost/max(st.session_state.calls, 1):.4f}")
+        
         with col2:
-            complexity = st.selectbox("Complexity", ["Simple", "Intermediate", "Advanced"])
+            st.markdown("#### 💰 Cost Breakdown")
+            if st.session_state.calls > 0:
+                # Create a simple cost breakdown
+                cost_data = {
+                    "Model": [st.session_state.selected_model],
+                    "Calls": [st.session_state.calls],
+                    "Total Cost": [f"${st.session_state.total_cost:.4f}"]
+                }
+                df = pd.DataFrame(cost_data)
+                st.dataframe(df, use_container_width=True)
+            else:
+                st.info("No usage data available yet")
         
-        description = st.text_area("Describe what you want to build:", height=100)
+        # Historical usage (if available)
+        st.markdown("#### 📋 Historical Usage")
+        usage = summarize_token_usage()
         
-        if st.button("⚡ Generate Code", type="primary"):
-            if description:
-                with st.spinner("🤖 Generating code..."):
-                    response = make_api_request("generate", {
-                        "language": language,
-                        "topic": description,
-                        "level": complexity
-                    })
-                    if response:
-                        result = response.json()
-                        st.code(result.get("response", "No code generated"), language=language.lower())
-    
-    with tab3:
-        st.subheader("📖 Concept Explainer")
-        
-        col1, col2 = st.columns(2)
-        with col1:
-            language = st.selectbox("Programming Language", ["Python", "JavaScript", "Java", "C++", "Go"], key="explain_lang")
-        with col2:
-            level = st.selectbox("Level", ["Beginner", "Intermediate", "Advanced"], key="explain_level")
-        
-        topic = st.text_input("Topic to explain:", placeholder="e.g., decorators, async/await, recursion")
-        
-        if st.button("📖 Explain", type="primary"):
-            if topic:
-                with st.spinner("🤖 Explaining..."):
-                    response = make_api_request("explain", {
-                        "language": language,
-                        "topic": topic,
-                        "level": level
-                    })
-                    if response:
-                        result = response.json()
-                        st.markdown(result.get("response", "No explanation generated"))
+        if usage:
+            df = pd.DataFrame([
+                {"Model": model, "Total Tokens": data["tokens"], "Total Cost ($)": round(data["cost"], 4)}
+                for model, data in usage.items()
+            ])
+            
+            st.dataframe(df, use_container_width=True)
+            
+            # Export option
+            csv = df.to_csv(index=False).encode("utf-8")
+            st.download_button(
+                label="📥 Export Historical Data",
+                data=csv,
+                file_name="euriai_usage_history.csv",
+                mime="text/csv"
+            )
+        else:
+            st.info("No historical usage data found")
+
+# Remove the separate page sections since everything is now in tabs
 
 # ---------- Footer ----------
 st.markdown("---")
