@@ -1,0 +1,7 @@
+openai
+langchain
+python-dotenv
+fastapi
+uvicorn
+streamlit
+requests
